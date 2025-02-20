@@ -2,7 +2,7 @@ DATA_DIR="/home/eisape/projects/diversify_lm_output/dolma/data"
 PARALLEL_DOWNLOADS="5"
 DOLMA_VERSION="v1_6-sample"
 
-git clone https://huggingface.co/datasets/allenai/dolma
+# git clone https://huggingface.co/datasets/allenai/dolma
 mkdir -p "${DATA_DIR}"
 
 
