@@ -1,0 +1,3 @@
+[submodule "dolma"]
+	path = dolma
+	url = https://huggingface.co/datasets/allenai/dolma
