@@ -30,7 +30,7 @@ def main():
     #     if not file_list:
     #         st.warning(f"No .json.gz files found in {data_dir}")
     #         return
-        
+    if st.button("Sample Documents"):
         # Randomly pick one file from the directory
         file_path = "v1_5r2_sample-0000.json.gz"
         st.write(f"Randomly selected file: `{file_path}`")
