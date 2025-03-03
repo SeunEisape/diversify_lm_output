@@ -4,6 +4,13 @@ import os
 import gzip
 import json
 
+def log_id(doc_id):
+    # Construct the path for the log file relative to the script's directory
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    log_path = os.path.join(script_dir, "log.txt")
+    with open(log_path, "a") as log_file:
+        log_file.write(f"{doc_id}\n")
+
 def main():
     st.title("Dolma Dataset Sampler")
 
@@ -48,6 +55,13 @@ def main():
                 record = json.loads(sampled_line)
                 st.subheader(f"Document {i+1}")
                 st.json(record)
+
+                # Add a button for logging the "id" field from the document
+                if st.button("Is this document nonsensical?", key=f"log_{i}"):
+                    doc_id = record.get("id", "Unknown")
+                    log_id(doc_id)
+                    st.success(f"Marked: {doc_id} as nonsensical")
+
             except json.JSONDecodeError:
                 st.warning("Could not parse line as JSON:")
                 st.text(sampled_line)
