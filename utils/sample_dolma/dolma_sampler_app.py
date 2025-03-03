@@ -11,7 +11,7 @@ def main():
     # Let the user provide the local directory containing .json.gz files
     data_dir = st.text_input(
         "Enter the path to your Dolma data directory:",
-        "/diversify_lm_output/random_sample_of_data"
+        "seuneisape/diversify_lm_output/main/utils/random_sample_of_data"
     )
 
     # Provide a numeric input for how many samples to display
