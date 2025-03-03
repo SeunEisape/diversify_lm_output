@@ -8,11 +8,11 @@ import glob
 def main():
     st.title("Dolma Dataset Sampler")
 
-    # Let the user provide the local directory containing .json.gz files
-    data_dir = st.text_input(
-        "Enter the path to your Dolma data directory:",
-        "seuneisape/diversify_lm_output/main/utils/random_sample_of_data"
-    )
+    # # Let the user provide the local directory containing .json.gz files
+    # data_dir = st.text_input(
+    #     "Enter the path to your Dolma data directory:",
+    #     "v1_5r2_sample-0000.json.gz"
+    # )
 
     # Provide a numeric input for how many samples to display
     num_docs = st.number_input(
@@ -23,16 +23,16 @@ def main():
         step=1
     )
 
-    if st.button("Sample Documents"):
-        # Gather the list of .json.gz files
-        file_list = glob.glob(os.path.join(data_dir, "*.json.gz"))
+    # if st.button("Sample Documents"):
+    #     # Gather the list of .json.gz files
+    #     file_list = glob.glob(os.path.join(data_dir, "*.json.gz"))
         
-        if not file_list:
-            st.warning(f"No .json.gz files found in {data_dir}")
-            return
+    #     if not file_list:
+    #         st.warning(f"No .json.gz files found in {data_dir}")
+    #         return
         
         # Randomly pick one file from the directory
-        file_path = random.choice(file_list)
+        file_path = "v1_5r2_sample-0000.json.gz"
         st.write(f"Randomly selected file: `{file_path}`")
 
         # Read all lines from the chosen file
