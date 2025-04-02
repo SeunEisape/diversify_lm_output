@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import glob
 import time
+from streamlit_pages import add_page_title
 
 # Set page config for cloud display
 st.set_page_config(
@@ -63,36 +64,8 @@ def load_jsonl_file(file_path, is_random):
         return []
     return completions
 
-def main():
-    st.title("LM Completions Viewer")
-    
-    # Loading available files
-    with st.spinner('Loading available files...'):
-        jsonl_files = get_jsonl_files()
-    
-    if not jsonl_files:
-        st.error("No JSONL files found in the completions_eval_store directory.")
-        st.info("Make sure the completions_eval_store directory exists and contains JSONL files.")
-        return
-    
-    # Create sidebar with file selection
-    st.sidebar.title("Select File")
-    selected_file_rel = st.sidebar.selectbox(
-        "Choose a JSONL file to view:",
-        options=[f[0] for f in jsonl_files],
-        format_func=lambda x: x.replace('.jsonl', '')
-    )
-    
-    # Get the full path and type of the selected file
-    selected_file, is_random = next((f[1], f[2]) for f in jsonl_files if f[0] == selected_file_rel)
-    
-    # Load and display the selected file
-    st.header(f"Viewing: {selected_file_rel}")
-    
-    # Add a loading spinner while loading the file
-    with st.spinner('Loading completions...'):
-        completions = load_jsonl_file(selected_file, is_random)
-    
+def display_completions(completions, is_random):
+    """Display completions with pagination and search."""
     if not completions:
         st.warning("No completions found in this file.")
         return
@@ -130,6 +103,42 @@ def main():
     
     # Add page navigation info
     st.write(f"Showing completions {start_idx + 1} to {end_idx} of {len(filtered_completions)}")
+
+def main():
+    st.title("LM Completions Viewer")
+    
+    # Loading available files
+    with st.spinner('Loading available files...'):
+        jsonl_files = get_jsonl_files()
+    
+    if not jsonl_files:
+        st.error("No JSONL files found in the completions_eval_store directory.")
+        st.info("Make sure the completions_eval_store directory exists and contains JSONL files.")
+        return
+    
+    # Create navigation links
+    st.markdown("### Available Files")
+    for rel_path, _, _ in jsonl_files:
+        # Convert file path to page name
+        page_name = rel_path.replace('/', '_').replace('.jsonl', '')
+        # Create a link to the page
+        st.markdown(f"- [{rel_path}](/{page_name})")
+    
+    # Add some helpful information
+    st.markdown("""
+    ### About This Viewer
+    This application allows you to:
+    - View completions from different prompt types
+    - Search through completions
+    - Navigate through pages of completions
+    - View random documents for random prompt completions
+    
+    ### How to Use
+    1. Click on any file link above to view its completions
+    2. Use the search box to filter completions
+    3. Navigate through pages using the page selector
+    4. View completions and their associated random documents (if available)
+    """)
 
 if __name__ == "__main__":
     main()
