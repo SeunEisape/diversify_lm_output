@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import glob
 import time
+import urllib.parse
 
 # Set page config for cloud display
 st.set_page_config(
@@ -63,6 +64,13 @@ def load_jsonl_file(file_path, is_random):
         return []
     return completions
 
+def get_file_from_query_params():
+    """Get the file path from query parameters if it exists."""
+    query_params = st.experimental_get_query_params()
+    if 'file' in query_params:
+        return urllib.parse.unquote(query_params['file'][0])
+    return None
+
 def main():
     st.title("LM Completions Viewer")
     
@@ -75,16 +83,36 @@ def main():
         st.info("Make sure the completions_eval_store directory exists and contains JSONL files.")
         return
     
+    # Get file from query parameters if it exists
+    query_file = get_file_from_query_params()
+    
     # Create sidebar with file selection
     st.sidebar.title("Select File")
-    selected_file_rel = st.sidebar.selectbox(
-        "Choose a JSONL file to view:",
-        options=[f[0] for f in jsonl_files],
-        format_func=lambda x: x.replace('.jsonl', '')
-    )
+    
+    # Create a dictionary mapping relative paths to full paths and is_random flag
+    file_dict = {f[0]: (f[1], f[2]) for f in jsonl_files}
+    
+    # If we have a query parameter file, try to use it
+    if query_file and query_file in file_dict:
+        selected_file_rel = query_file
+    else:
+        selected_file_rel = st.sidebar.selectbox(
+            "Choose a JSONL file to view:",
+            options=[f[0] for f in jsonl_files],
+            format_func=lambda x: x.replace('.jsonl', '')
+        )
     
     # Get the full path and type of the selected file
-    selected_file, is_random = next((f[1], f[2]) for f in jsonl_files if f[0] == selected_file_rel)
+    selected_file, is_random = file_dict[selected_file_rel]
+    
+    # Update URL with selected file
+    st.experimental_set_query_params(file=urllib.parse.quote(selected_file_rel))
+    
+    # Add a copy link button
+    current_url = st.experimental_get_query_params()
+    copy_url = f"{st.experimental_get_query_params()['file'][0]}"
+    st.sidebar.markdown(f"**Share this link:**")
+    st.sidebar.code(copy_url)
     
     # Load and display the selected file
     st.header(f"Viewing: {selected_file_rel}")
