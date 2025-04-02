@@ -65,16 +65,24 @@ def calculate_entropy(jsonl_path, max_n=5):
     
     return stats
 
-def plot_entropy(stats, filename):
+def plot_entropy(stats, jsonl_path):
     """
     Plot the entropy statistics.
     
     Args:
         stats (dict): Dictionary containing entropy statistics
-        filename (str): Name of the file being analyzed (for plot title)
+        jsonl_path (str): Path to the input JSONL file
     """
     if not stats:
         return
+    
+    # Create graphs directory in the same location as the input file
+    input_path = Path(jsonl_path)
+    graphs_dir = input_path.parent / "graphs"
+    graphs_dir.mkdir(exist_ok=True)
+    
+    # Get filename without extension for plot title
+    filename = input_path.stem
     
     # Extract data for plotting
     n_values = list(stats.keys())
@@ -95,7 +103,7 @@ def plot_entropy(stats, filename):
         plt.text(n_values[i], value + 0.02, f'{value:.3f}', ha='center', va='bottom')
     
     plt.tight_layout()
-    plt.savefig(f"{filename}_ngram_entropy.png")
+    plt.savefig(graphs_dir / f"{filename}_ngram_entropy.png")
     plt.close()
 
 def main():
@@ -122,9 +130,8 @@ def main():
         print(f"Number of unique {gram_name}: {stat['unique_ngrams']}")
     
     # Plot and save the results
-    filename = Path(args.jsonl_file).stem
-    plot_entropy(stats, filename)
-    print(f"\nPlot saved as '{filename}_ngram_entropy.png'")
+    plot_entropy(stats, args.jsonl_file)
+    print(f"\nPlot saved in the 'graphs' directory next to the input file")
 
 if __name__ == "__main__":
     main()

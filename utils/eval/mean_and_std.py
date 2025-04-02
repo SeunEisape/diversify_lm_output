@@ -69,7 +69,7 @@ def calculate_stats(jsonl_path, ngram_range=(1, 5)):
     
     return mean_char_length, std_char_deviation, mean_word_length, std_word_deviation, ngram_stats, len(char_lengths)
 
-def plot_statistics(mean_char_length, std_char_deviation, mean_word_length, std_word_deviation, ngram_stats, filename):
+def plot_statistics(mean_char_length, std_char_deviation, mean_word_length, std_word_deviation, ngram_stats, jsonl_path):
     """
     Plot the statistics as bar graphs with error bars.
     
@@ -79,8 +79,16 @@ def plot_statistics(mean_char_length, std_char_deviation, mean_word_length, std_
         mean_word_length (float): Mean word length
         std_word_deviation (float): Standard deviation of word length
         ngram_stats (dict): Dictionary containing n-gram statistics
-        filename (str): Name of the file being analyzed (for plot title)
+        jsonl_path (str): Path to the input JSONL file
     """
+    # Create graphs directory in the same location as the input file
+    input_path = Path(jsonl_path)
+    graphs_dir = input_path.parent / "graphs"
+    graphs_dir.mkdir(exist_ok=True)
+    
+    # Get filename without extension for plot titles
+    filename = input_path.stem
+    
     # Plot character and word length statistics
     plt.figure(figsize=(10, 6))
     labels = ['Characters', 'Words']
@@ -93,7 +101,7 @@ def plot_statistics(mean_char_length, std_char_deviation, mean_word_length, std_
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     plt.ylim(0, 2000)  # Set fixed y-axis limit to 2000
     plt.tight_layout()
-    plt.savefig(f"{filename}_length_stats.png")
+    plt.savefig(graphs_dir / f"{filename}_length_stats.png")
     plt.close()
     
     # Plot n-gram statistics
@@ -111,7 +119,7 @@ def plot_statistics(mean_char_length, std_char_deviation, mean_word_length, std_
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.ylim(0, 400)  # Set fixed y-axis limit to 400
         plt.tight_layout()
-        plt.savefig(f"{filename}_ngram_stats.png")
+        plt.savefig(graphs_dir / f"{filename}_ngram_stats.png")
         plt.close()
 
 def main():
@@ -142,9 +150,8 @@ def main():
     print(f"Number of samples analyzed: {count}")
     
     # Plot the statistics
-    filename = Path(jsonl_file).stem
-    plot_statistics(mean_char_length, std_char_deviation, mean_word_length, std_word_deviation, ngram_stats, filename)
-    print(f"Plots saved as '{filename}_length_stats.png' and '{filename}_ngram_stats.png'")
+    plot_statistics(mean_char_length, std_char_deviation, mean_word_length, std_word_deviation, ngram_stats, jsonl_file)
+    print(f"Plots saved in the 'graphs' directory next to the input file")
 
 if __name__ == "__main__":
     main()

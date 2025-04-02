@@ -1,5 +1,5 @@
 # Prompt of interest
-PROMPT_OF_INTEREST = haiku
+PROMPT_OF_INTEREST = creative_story
 
 all_prompts:
 	python /home/sanjayss/gpu_scheduler/reserve.py -- python /home/eisape/projects/diversify_lm_output/utils/olmo_inference/run_all_normal_prompts.py --num_completions 200 --max_tokens 500
@@ -18,3 +18,9 @@ mean_and_std:
 ngram_entropy:
 	python utils/eval/ngram_entropy.py --jsonl_file completions_eval_store/${PROMPT_OF_INTEREST}/${PROMPT_OF_INTEREST}_normal_prompt_output.jsonl
 	python utils/eval/ngram_entropy.py --jsonl_file completions_eval_store/${PROMPT_OF_INTEREST}/${PROMPT_OF_INTEREST}_random_prompt_output.jsonl
+
+all:
+	python utils/eval/ngram_entropy.py --jsonl_file completions_eval_store/${PROMPT_OF_INTEREST}/${PROMPT_OF_INTEREST}_normal_prompt_output.jsonl
+	python utils/eval/ngram_entropy.py --jsonl_file completions_eval_store/${PROMPT_OF_INTEREST}/${PROMPT_OF_INTEREST}_random_prompt_output.jsonl
+	python utils/eval/mean_and_std.py --jsonl_file completions_eval_store/${PROMPT_OF_INTEREST}/${PROMPT_OF_INTEREST}_normal_prompt_output.jsonl
+	python utils/eval/mean_and_std.py --jsonl_file completions_eval_store/${PROMPT_OF_INTEREST}/${PROMPT_OF_INTEREST}_random_prompt_output.jsonl
