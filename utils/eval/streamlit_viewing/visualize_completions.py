@@ -66,7 +66,7 @@ def load_jsonl_file(file_path, is_random):
 
 def get_file_from_query_params():
     """Get the file path from query parameters if it exists."""
-    query_params = st.query_params()
+    query_params = st.experimental_get_query_params()
     if 'file' in query_params:
         return urllib.parse.unquote(query_params['file'][0])
     return None
@@ -106,11 +106,11 @@ def main():
     selected_file, is_random = file_dict[selected_file_rel]
     
     # Update URL with selected file
-    st.query_params(file=urllib.parse.quote(selected_file_rel))
+    st.experimental_set_query_params(file=urllib.parse.quote(selected_file_rel))
     
     # Add a copy link button
-    current_url = st.query_params()
-    copy_url = f"{st.query_params()['file'][0]}"
+    current_url = st.experimental_get_query_params()
+    copy_url = f"{st.experimental_get_query_params()['file'][0]}"
     st.sidebar.markdown(f"**Share this link:**")
     st.sidebar.code(copy_url)
     
