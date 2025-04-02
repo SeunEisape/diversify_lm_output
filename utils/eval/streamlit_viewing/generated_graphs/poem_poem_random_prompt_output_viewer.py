@@ -23,8 +23,8 @@ st.set_page_config(
 BASE_DIR = "completions_eval_store"
 
 # This will be replaced with the actual file path when generating individual pages
-TARGET_FILE = "REPLACE_WITH_FILE_PATH"
-IS_RANDOM = "REPLACE_WITH_IS_RANDOM"
+TARGET_FILE = ""completions_eval_store/poem/poem_random_prompt_output.jsonl""
+IS_RANDOM = "True"
 
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def get_jsonl_files():

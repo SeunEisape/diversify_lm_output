@@ -8,7 +8,7 @@ def generate_viewers():
     base_dir = "completions_eval_store"
     
     # Create a directory for the generated viewers if it doesn't exist
-    viewers_dir = Path("utils/eval/streamlit_viewing/generated")
+    viewers_dir = Path("utils/eval/streamlit_viewing/generated_graphs")
     viewers_dir.mkdir(exist_ok=True)
     
     # Read the template file
