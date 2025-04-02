@@ -18,10 +18,8 @@ st.set_page_config(
     }
 )
 
-# This will be replaced with the actual paths when generating individual pages
-TARGET_FILE = "REPLACE_WITH_FILE_PATH"
-BASE_DIR = "REPLACE_WITH_BASE_DIR"
-IS_RANDOM = "REPLACE_WITH_IS_RANDOM"
+# Base directory containing JSONL files
+BASE_DIR = "completions_eval_store"
 
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def get_jsonl_files():
@@ -74,16 +72,54 @@ def get_file_from_query_params():
     return None
 
 def main():
-    # Get relative path for display
-    rel_path = os.path.relpath(TARGET_FILE, BASE_DIR)
-    st.title(f"LM Completions Viewer: {rel_path}")
+    st.title("LM Completions Viewer")
     
-    # Load and display the file
-    st.header(f"Viewing: {rel_path}")
+    # Loading available files
+    with st.spinner('Loading available files...'):
+        jsonl_files = get_jsonl_files()
+    
+    if not jsonl_files:
+        st.error("No JSONL files found in the completions_eval_store directory.")
+        st.info("Make sure the completions_eval_store directory exists and contains JSONL files.")
+        return
+    
+    # Get file from query parameters if it exists
+    query_file = get_file_from_query_params()
+    
+    # Create sidebar with file selection
+    st.sidebar.title("Select File")
+    
+    # Create a dictionary mapping relative paths to full paths and is_random flag
+    file_dict = {f[0]: (f[1], f[2]) for f in jsonl_files}
+    
+    # If we have a query parameter file, try to use it
+    if query_file and query_file in file_dict:
+        selected_file_rel = query_file
+    else:
+        selected_file_rel = st.sidebar.selectbox(
+            "Choose a JSONL file to view:",
+            options=[f[0] for f in jsonl_files],
+            format_func=lambda x: x.replace('.jsonl', '')
+        )
+    
+    # Get the full path and type of the selected file
+    selected_file, is_random = file_dict[selected_file_rel]
+    
+    # Update URL with selected file
+    st.experimental_set_query_params(file=urllib.parse.quote(selected_file_rel))
+    
+    # Add a copy link button
+    current_url = st.experimental_get_query_params()
+    copy_url = f"{st.experimental_get_query_params()['file'][0]}"
+    st.sidebar.markdown(f"**Share this link:**")
+    st.sidebar.code(copy_url)
+    
+    # Load and display the selected file
+    st.header(f"Viewing: {selected_file_rel}")
     
     # Add a loading spinner while loading the file
     with st.spinner('Loading completions...'):
-        completions = load_jsonl_file(TARGET_FILE, IS_RANDOM)
+        completions = load_jsonl_file(selected_file, is_random)
     
     if not completions:
         st.warning("No completions found in this file.")
@@ -113,7 +149,7 @@ def main():
     # Display each completion directly
     for i, completion in enumerate(filtered_completions[start_idx:end_idx], start=start_idx + 1):
         st.subheader(f"Completion {i}")
-        if IS_RANDOM and 'random_doc' in completion:
+        if is_random and 'random_doc' in completion:
             st.write("**Random Document:**")
             st.text(completion['random_doc'])
             st.write("**Completion:**")
