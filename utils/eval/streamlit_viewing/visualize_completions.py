@@ -31,14 +31,16 @@ def get_jsonl_files():
                     full_path = os.path.join(root, file)
                     # Get relative path for display
                     rel_path = os.path.relpath(full_path, BASE_DIR)
-                    jsonl_files.append((rel_path, full_path))
+                    # Determine if it's a random or normal prompt file
+                    is_random = "random" in file.lower()
+                    jsonl_files.append((rel_path, full_path, is_random))
     except Exception as e:
         st.error(f"Error finding JSONL files: {str(e)}")
         return []
     return sorted(jsonl_files)
 
 @st.cache_data(ttl=3600)  # Cache for 1 hour
-def load_jsonl_file(file_path):
+def load_jsonl_file(file_path, is_random):
     """Load and parse a JSONL file."""
     completions = []
     try:
@@ -47,7 +49,12 @@ def load_jsonl_file(file_path):
                 try:
                     data = json.loads(line.strip())
                     if 'completion_only' in data:
-                        completions.append(data['completion_only'])
+                        completion_data = {
+                            'text': data['completion_only']
+                        }
+                        if is_random and 'random_doc' in data:
+                            completion_data['random_doc'] = data['random_doc']
+                        completions.append(completion_data)
                 except json.JSONDecodeError:
                     st.warning(f"Could not parse line in {file_path}")
                     continue
@@ -76,15 +83,15 @@ def main():
         format_func=lambda x: x.replace('.jsonl', '')
     )
     
-    # Get the full path of the selected file
-    selected_file = next(f[1] for f in jsonl_files if f[0] == selected_file_rel)
+    # Get the full path and type of the selected file
+    selected_file, is_random = next((f[1], f[2]) for f in jsonl_files if f[0] == selected_file_rel)
     
     # Load and display the selected file
     st.header(f"Viewing: {selected_file_rel}")
     
     # Add a loading spinner while loading the file
     with st.spinner('Loading completions...'):
-        completions = load_jsonl_file(selected_file)
+        completions = load_jsonl_file(selected_file, is_random)
     
     if not completions:
         st.warning("No completions found in this file.")
@@ -99,7 +106,7 @@ def main():
     # Filter completions based on search term
     filtered_completions = completions
     if search_term:
-        filtered_completions = [c for c in completions if search_term.lower() in c.lower()]
+        filtered_completions = [c for c in completions if search_term.lower() in c['text'].lower()]
         st.write(f"Found {len(filtered_completions)} matching completions")
     
     # Add pagination
@@ -111,10 +118,15 @@ def main():
     start_idx = (page - 1) * items_per_page
     end_idx = min(start_idx + items_per_page, len(filtered_completions))
     
-    # Display each completion in an expandable section
+    # Display each completion directly
     for i, completion in enumerate(filtered_completions[start_idx:end_idx], start=start_idx + 1):
-        with st.expander(f"Completion {i}"):
-            st.text_area("", completion, height=200, key=f"completion_{i}")
+        st.subheader(f"Completion {i}")
+        if is_random and 'random_doc' in completion:
+            st.write("**Random Document:**")
+            st.text(completion['random_doc'])
+            st.write("**Completion:**")
+        st.text_area("", completion['text'], height=200, key=f"completion_{i}")
+        st.markdown("---")  # Add a horizontal line between completions
     
     # Add page navigation info
     st.write(f"Showing completions {start_idx + 1} to {end_idx} of {len(filtered_completions)}")
